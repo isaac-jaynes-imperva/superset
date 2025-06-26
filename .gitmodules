@@ -41,4 +41,4 @@
 	url = https://github.com/cpina/github-action-push-to-another-repository
 [submodule "docker/sqlalchemy-drill"]
 	path = docker/sqlalchemy-drill
-	url = https://github.com/jsonar/sqlalchemy-drill.git
+	url = git@github.com:jsonar/sqlalchemy-drill.git

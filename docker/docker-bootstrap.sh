@@ -59,9 +59,11 @@ else
   echo "Skipping local overrides"
 fi
 
-if [ -d /app/docker/sqlalchemy-drill ]; then
-  echo "Installing local sqlalchemy-drill in editable mode"
-  pip install -e /app/docker/sqlalchemy-drill
+echo "Installing local sqlalchemy-drill in editable mode"
+if command -v uv > /dev/null 2>&1; then
+  uv pip install --no-cache-dir /app/docker/sqlalchemy-drill
+else
+  pip install --no-cache-dir /app/docker/sqlalchemy-drill
 fi
 
 case "${1}" in
