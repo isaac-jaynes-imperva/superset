@@ -36,7 +36,6 @@ cover
 .mypy_cache
 .python-version
 .tox
-.vscode
 _build
 _images
 _modules
