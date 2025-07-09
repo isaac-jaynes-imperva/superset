@@ -1575,11 +1575,7 @@ SQL_VALIDATORS_BY_ENGINE = {
 # use the "engine_name" attribute of the corresponding DB engine spec
 # in `superset/db_engine_specs/`.
 PREFERRED_DATABASES: list[str] = [
-    "PostgreSQL",
-    "Presto",
-    "MySQL",
-    "SQLite",
-    # etc.
+    "Apache Drill"
 ]
 # When adding a new database we try to connect to it. Depending on which parameters are
 # incorrect this could take a couple minutes, until the SQLAlchemy driver pinging the
@@ -1723,6 +1719,9 @@ SEND_FILE_MAX_AGE_DEFAULT = int(timedelta(days=365).total_seconds())
 SQLALCHEMY_EXAMPLES_URI = (
     "sqlite:///" + os.path.join(DATA_DIR, "examples.db") + "?check_same_thread=false"
 )
+
+MONGODB_UUID = "MongoDB"
+MONGODB_URI = ("drill+sadrill://host.docker.internal:8047/mongo?use_ssl=False")
 
 # Optional prefix to be added to all static asset paths when rendering the UI.
 # This is useful for hosting assets in an external CDN, for example

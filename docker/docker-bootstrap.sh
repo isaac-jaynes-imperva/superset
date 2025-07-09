@@ -59,7 +59,7 @@ else
   echo "Skipping local overrides"
 fi
 
-echo "Installing local sqlalchemy-drill in editable mode"
+echo "Installing jsonar sqlalchemy-drill"
 if command -v uv > /dev/null 2>&1; then
   uv pip install --no-cache-dir /app/docker/sqlalchemy-drill
 else

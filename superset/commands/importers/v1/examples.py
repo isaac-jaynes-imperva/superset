@@ -43,6 +43,7 @@ from superset.datasets.schemas import ImportV1DatasetSchema
 from superset.models.dashboard import dashboard_slices
 from superset.utils.core import get_example_default_schema
 from superset.utils.database import get_example_database
+from superset.utils.database import get_default_mongo_database
 from superset.utils.decorators import transaction
 
 
@@ -103,6 +104,10 @@ class ImportExamplesCommand(ImportModelsCommand):
                     ignore_permissions=True,
                 )
                 database_ids[str(database.uuid)] = database.id
+
+        mongo_db = get_default_mongo_database()
+        if mongo_db is not None:
+            database_ids[str(mongo_db.uuid)] = mongo_db.id
 
         # import datasets
         # If database_uuid is not in the list of UUIDs it means that the examples
