@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AdhocColumn,
   tn,
@@ -62,6 +62,21 @@ function DndColumnSelect(props: DndColumnSelectProps) {
 
     return new OptionSelector(optionsMap, multi, value);
   }, [multi, options, value]);
+
+  useEffect(() => {
+    const handleAddAllColumns = () => {
+      options.forEach(option => {
+        if (!optionSelector.has(option.column_name)) {
+          optionSelector.add(option.column_name);
+        }
+      });
+      onChange?.(optionSelector.getValues());
+    };
+    window.addEventListener('add-all-columns', handleAddAllColumns);
+    return () => {
+      window.removeEventListener('add-all-columns', handleAddAllColumns);
+    };
+  }, [options, onChange]);
 
   const onDrop = useCallback(
     (item: DatasourcePanelDndItem) => {

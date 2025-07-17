@@ -25,10 +25,17 @@ import { Icons } from 'src/components/Icons';
 
 type ValidationError = string;
 
+type ControlHeaderAction = {
+  action: () => {};
+  color?: string;
+  description?: string;
+}
+
 export type ControlHeaderProps = {
   name?: string;
   label?: ReactNode;
   description?: ReactNode;
+  actionButton?: ControlHeaderAction;
   validationErrors?: ValidationError[];
   renderTrigger?: boolean;
   rightNode?: ReactNode;
@@ -54,6 +61,7 @@ const ControlHeader: FC<ControlHeaderProps> = ({
   name,
   label,
   description,
+  actionButton,
   validationErrors = [],
   renderTrigger = false,
   rightNode,
@@ -86,8 +94,8 @@ const ControlHeader: FC<ControlHeaderProps> = ({
     return null;
   }
 
-  const renderOptionalIcons = () => {
-    if (!hovered) {
+  const renderAction = () => {
+    if (!actionButton) {
       return null;
     }
 
@@ -99,6 +107,38 @@ const ControlHeader: FC<ControlHeaderProps> = ({
           right: 0;
           padding-left: ${gridUnit}px;
           transform: translate(100%, -50%);
+          white-space: nowrap;
+        `}
+      >
+        <Tooltip
+          id="description-tooltip"
+          title={actionButton.description}
+          placement="top"
+        >
+          <Icons.PlusCircleOutlined
+            style={{color: actionButton.color || colors.primary.base}}
+            css={iconStyles}
+            onClick={actionButton.action}
+          />
+        </Tooltip>{' '}
+      </span>
+    );
+  }
+
+  const renderOptionalIcons = () => {
+    if (!hovered) {
+      return null;
+    }
+
+    const actionAdjustedTransform = actionButton ? 'translate(200%, -50%)' : 'translate(100%, -50%)';
+    return (
+      <span
+        css={() => css`
+          position: absolute;
+          top: 50%;
+          right: 0;
+          padding-left: ${gridUnit}px;
+          transform: ${actionAdjustedTransform};
           white-space: nowrap;
         `}
       >
@@ -148,6 +188,7 @@ const ControlHeader: FC<ControlHeaderProps> = ({
           >
             {label}
           </span>{' '}
+          {renderAction()}
           {warning && (
             <span>
               <Tooltip id="error-tooltip" placement="top" title={warning}>

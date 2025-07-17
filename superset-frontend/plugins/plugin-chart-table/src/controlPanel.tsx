@@ -106,6 +106,12 @@ const allColumnsControl: typeof sharedControls.groupby = {
   ...sharedControls.groupby,
   label: t('Columns'),
   description: t('Columns to display'),
+  actionButton: {
+    action: () => {
+      dispatchEvent(new CustomEvent('add-all-columns'));
+    },
+    description: t('Add all columns'),
+  },
   multi: true,
   freeForm: true,
   allowAll: true,
