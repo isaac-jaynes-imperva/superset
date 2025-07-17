@@ -1537,8 +1537,12 @@ class SqlaTable(
         """
         label = utils.get_column_name(col)
         try:
+            expression = col["sqlExpression"]
+            if " " in expression and not any(char in expression for char in ("(", ")", "`", '"')):
+                # Add backticks if the expression is a plain column name
+                expression = f"`{expression}`"
             expression = self._process_sql_expression(
-                expression=col["sqlExpression"],
+                expression=expression,
                 database_id=self.database_id,
                 engine=self.database.backend,
                 schema=self.schema,
