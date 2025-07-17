@@ -37,6 +37,8 @@ import { extent as d3Extent, max as d3Max } from 'd3-array';
 import { FaSort } from '@react-icons/all-files/fa/FaSort';
 import { FaSortDown as FaSortDesc } from '@react-icons/all-files/fa/FaSortDown';
 import { FaSortUp as FaSortAsc } from '@react-icons/all-files/fa/FaSortUp';
+import { RiFilterLine } from "@react-icons/all-files/ri/RiFilterLine";
+import { RiFilterOffLine } from "@react-icons/all-files/ri/RiFilterOffLine";
 import cx from 'classnames';
 import {
   DataRecord,
@@ -177,6 +179,33 @@ function SortIcon<D extends object>({ column }: { column: ColumnInstance<D> }) {
     sortIcon = isSortedDesc ? <FaSortDesc /> : <FaSortAsc />;
   }
   return sortIcon;
+}
+function FilterPlusIcon<D extends object>({ colName }: { colName: string }) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const event = new CustomEvent('addColumnFilter', {
+      detail: {
+        column: colName,
+        present: true,
+      },
+    });
+    window.dispatchEvent(event);
+  };
+  return <div style={{ display: 'contents' }} onClick={handleClick}><RiFilterLine /></div>;
+}
+
+function FilterMinusIcon<D extends object>({ colName }: { colName: string }) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const event = new CustomEvent('addColumnFilter', {
+      detail: {
+        column: colName,
+        present: false,
+      },
+    });
+    window.dispatchEvent(event);
+  };
+  return <div style={{ display: 'contents' }} onClick={handleClick}><RiFilterOffLine /></div>;
 }
 
 const SearchInput = ({
@@ -899,7 +928,15 @@ export default function TableChart<D extends DataRecord = DataRecord>(
                       toggleFilter(key, value);
                     }
                   }
-                : undefined,
+                : () => {
+                  const event = new CustomEvent('addColumnFilter', {
+                    detail: {
+                      column: column.label,
+                      val: value,
+                    },
+                  });
+                  window.dispatchEvent(event);
+                },
             onContextMenu: (e: MouseEvent) => {
               if (handleContextMenu) {
                 e.preventDefault();
@@ -1015,6 +1052,8 @@ export default function TableChart<D extends DataRecord = DataRecord>(
             >
               <span data-column-name={col.id}>{displayLabel}</span>
               <SortIcon column={col} />
+              <FilterPlusIcon colName={displayLabel} />
+              <FilterMinusIcon colName={displayLabel} />
             </div>
           </th>
         ),

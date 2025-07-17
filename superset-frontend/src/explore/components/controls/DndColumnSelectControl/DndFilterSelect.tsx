@@ -223,6 +223,44 @@ const DndFilterSelect = (props: DndFilterSelectProps) => {
     );
   }, [props.value]);
 
+  useEffect(() => {
+    const handleAddColumnFilter = (event: CustomEvent<{ column: string; present: boolean; val: any }>) => {
+      const { column, present, val } = event.detail;
+      let operatorId, operator, comparator;
+      if (val) {
+        operatorId = Operators.Equals;
+        operator = OPERATOR_ENUM_TO_OPERATOR_TYPE[Operators.Equals].operation;
+        comparator = val;
+      } else if (present) {
+        operatorId = Operators.IsNotNull;
+        operator = OPERATOR_ENUM_TO_OPERATOR_TYPE[Operators.IsNotNull].operation;
+        comparator = undefined;
+      } else {
+        operatorId = Operators.IsNull;
+        operator = OPERATOR_ENUM_TO_OPERATOR_TYPE[Operators.IsNull].operation;
+        comparator = undefined;
+      }
+      const newAdhocFilter = new AdhocFilter({
+        expressionType: ExpressionTypes.Simple,
+        subject: column,
+        operator,
+        operatorId,
+        comparator,
+        clause: Clauses.Where,
+        isNew: true,
+      });
+      setValues(prev => {
+        const newValues = [...prev, newAdhocFilter];
+        onChange(newValues);
+        return newValues;
+      });
+    };
+    window.addEventListener('addColumnFilter', handleAddColumnFilter as EventListener);
+    return () => {
+      window.removeEventListener('addColumnFilter', handleAddColumnFilter as EventListener);
+    };
+  }, [onChange]);
+
   const removeValue = useCallback(
     (index: number) => {
       const valuesCopy = [...values];
