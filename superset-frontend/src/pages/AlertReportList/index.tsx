@@ -359,17 +359,30 @@ function AlertList({
       },
       {
         Cell: ({ row: { original } }: any) => {
+          const hasDownloadLink = true;
           const history = useHistory();
           const handleEdit = () => handleAlertEdit(original);
           const handleDelete = () => setCurrentAlertDeleting(original);
           const handleGotoExecutionLog = () =>
             history.push(`/${original.type.toLowerCase()}/${original.id}/log`);
 
+          const handleDownloadLast = () => {
+            // Implement download logic here
+          }
           const allowEdit =
             original.owners.map((o: Owner) => o.id).includes(user.userId) ||
             isUserAdmin(user);
 
           const actions = [
+            hasDownloadLink
+              ? {
+                  label: 'download-last-action',
+                  tooltip: t('Download last run'),
+                  placement: 'bottom',
+                  icon: 'DownloadOutlined',
+                  onClick: handleDownloadLast,
+                }
+              : null,
             canEdit
               ? {
                   label: 'execution-log-action',
