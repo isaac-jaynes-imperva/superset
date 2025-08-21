@@ -27,6 +27,7 @@ x-superset-volumes: &superset-volumes
   - ./docker:/app/docker
   - ./superset:/app/superset
   - ./superset-frontend:/app/superset-frontend
+  - ./superset/docker/sqlalchemy-drill:/app/sqlalchemy_drill
   - superset_home:/app/superset_home
   - ./tests:/app/tests
   - ./downloads:/app/downloads

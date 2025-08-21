@@ -61,9 +61,9 @@ fi
 
 echo "Installing jsonar sqlalchemy-drill"
 if command -v uv > /dev/null 2>&1; then
-  uv pip install --no-cache-dir /app/docker/sqlalchemy-drill
+  uv pip install --no-cache-dir -e /app/docker/sqlalchemy-drill
 else
-  pip install --no-cache-dir /app/docker/sqlalchemy-drill
+  pip install --no-cache-dir -e /app/docker/sqlalchemy-drill
 fi
 
 case "${1}" in

@@ -11,6 +11,10 @@
       },
       "pathMappings": [
         {
+          "localRoot": "${workspaceFolder}/superset/docker/sqlalchemy-drill",
+          "remoteRoot": "/app/sqlalchemy_drill"
+        },
+        {
           "localRoot": "${workspaceFolder}",
           "remoteRoot": "/app"
         }
