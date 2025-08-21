@@ -30,7 +30,7 @@ else:
         from _typeshed.wsgi import StartResponse, WSGIApplication, WSGIEnvironment
 
 
-from flask import Flask
+from flask import Flask, send_from_directory, Blueprint
 from werkzeug.exceptions import NotFound
 
 from superset.initialization import SupersetAppInitializer
@@ -67,6 +67,16 @@ def create_app(
 
         app_initializer = app.config.get("APP_INITIALIZER", SupersetAppInitializer)(app)
         app_initializer.init_app()
+
+        # Register /downloads/<filename> route here
+        downloads_folder = app.config.get("REPORT_OUTPUT_DIR", "/app/downloads")
+        downloads_bp = Blueprint("downloads", __name__)
+
+        @downloads_bp.route("/downloads/<path:filename>")
+        def downloads(filename):
+            return send_from_directory(downloads_folder, filename, as_attachment=True)
+
+        app.register_blueprint(downloads_bp)
 
         return app
 

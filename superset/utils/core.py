@@ -72,6 +72,7 @@ from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.sql.type_api import Variant
 from sqlalchemy.types import TypeEngine
 from typing_extensions import TypeGuard
+import shutil  # add this import
 
 from superset.constants import (
     DEFAULT_USER_AGENT,
@@ -680,6 +681,22 @@ def pessimistic_connection_handling(some_engine: Engine) -> None:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("PRAGMA foreign_keys=ON")
 
+def create_download_link_for_file(
+    fname: str,
+    config: dict[str, Any],
+    tmp_shared_folder: str,
+) -> str:
+    """
+    Copies the file to a shared folder with a unique hash and returns the HTML download link.
+    """
+    basename = os.path.basename(fname)
+    file_hash = md5_sha_from_str(fname + str(os.path.getmtime(fname)))
+    name_parts = os.path.splitext(basename)
+    unique_basename = f"{name_parts[0]}_{file_hash}{name_parts[1]}"
+    shared_path = os.path.join(tmp_shared_folder, unique_basename)
+    shutil.copy2(fname, shared_path)
+    download_url = f"{config.get('EMAIL_SHARED_FILE_BASE_URL', 'http://localhost:8088')}/downloads/{unique_basename}"
+    return f'<a href="{download_url}">{basename}</a>'
 
 def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many-locals
     to: str,
@@ -695,11 +712,13 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
     bcc: str | None = None,
     mime_subtype: str = "mixed",
     header_data: HeaderDataType | None = None,
+    attach: bool | None = None,
 ) -> None:
     """
     Send an email with html content, eg:
     send_email_smtp(
-        'test@example.com', 'foo', '<b>Foo</b> bar',['/dev/null'], dryrun=True)
+        'test@example.com', 'foo', '<b>Foo</b> bar,['/dev/null'], dryrun=True)
+    attach: bool | None = None,
     """
     smtp_mail_from = config["SMTP_MAIL_FROM"]
     smtp_mail_to = recipients_string_to_list(to)
@@ -727,34 +746,76 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
     mime_text = MIMEText(html_content, "html")
     msg.attach(mime_text)
 
-    # Attach files by reading them from disk
-    for fname in files or []:
+    # --- Begin: handle file attachments or links based on attach argument ---
+    # Use a shared folder that is mounted as a Docker volume
+    tmp_shared_folder = config.get("REPORT_OUTPUT_DIR", "/app/downloads")
+    os.makedirs(tmp_shared_folder, exist_ok=True)
+    download_links = []
+    files = files or []
+    # attach = attach or True
+    attach = attach if attach is not None else False
+    for fname in files:
         basename = os.path.basename(fname)
-        with open(fname, "rb") as f:
-            msg.attach(
-                MIMEApplication(
-                    f.read(),
-                    Content_Disposition=f"attachment; filename='{basename}'",
-                    Name=basename,
+        if not attach:
+            tmp_file_path = os.path.join(tmp_shared_folder, basename)
+            shutil.copy2(fname, tmp_file_path)
+            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder))
+        else:
+            with open(fname, "rb") as f:
+                msg.attach(
+                    MIMEApplication(
+                        f.read(),
+                        Content_Disposition=f"attachment; filename='{basename}'",
+                        Name=basename,
+                    )
                 )
-            )
 
     # Attach any files passed directly
     for name, body in (data or {}).items():
-        msg.attach(
-            MIMEApplication(
-                body, Content_Disposition=f"attachment; filename='{name}'", Name=name
+        if not attach:
+            # Save to temp file and link
+            tmp_file_path = os.path.join(tmp_shared_folder, name)
+            with open(tmp_file_path, "wb") as f:
+                if isinstance(body, str):
+                    f.write(body.encode("utf-8"))
+                else:
+                    f.write(body)
+            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder))
+        else:
+            msg.attach(
+                MIMEApplication(
+                    body, Content_Disposition=f"attachment; filename='{name}'", Name=name
+                )
             )
-        )
 
     for name, body_pdf in (pdf or {}).items():
-        msg.attach(
-            MIMEApplication(
-                body_pdf,
-                Content_Disposition=f"attachment; filename='{name}'",
-                Name=name,
+        if not attach:
+            # Save to temp file and link
+            tmp_file_path = os.path.join(tmp_shared_folder, name)
+            with open(tmp_file_path, "wb") as f:
+                f.write(body_pdf)
+            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder))
+        else:
+            msg.attach(
+                MIMEApplication(
+                    body_pdf,
+                    Content_Disposition=f"attachment; filename='{name}'",
+                    Name=name,
+                )
             )
+
+    if download_links:
+        links_html = "<br>".join(
+            [__("File too large to attach. Download here: ") + link for link in download_links]
         )
+        html_content = html_content + "<br><br>" + links_html
+        # Remove previous MIMEText and re-attach updated one
+        for i, part in enumerate(msg.get_payload()):
+            if isinstance(part, MIMEText):
+                del msg.get_payload()[i]
+                break
+        msg.attach(MIMEText(html_content, "html"))
+    # --- End: handle file attachments or links based on attach_files argument ---
 
     # Attach any inline images, which may be required for display in
     # HTML content (inline)

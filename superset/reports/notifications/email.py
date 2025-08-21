@@ -250,6 +250,7 @@ class EmailNotification(BaseNotification):  # pylint: disable=too-few-public-met
                 cc=cc,
                 bcc=bcc,
                 header_data=content.header_data,
+                attach=True,
             )
             logger.info(
                 "Report sent to email, notification content is %s", content.header_data
