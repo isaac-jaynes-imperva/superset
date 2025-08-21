@@ -20,6 +20,7 @@
 # development environments. Also note that superset_config_docker.py is imported
 # as a final step as a means to override "defaults" configured here
 #
+from datetime import timedelta
 import logging
 import os
 import sys
@@ -96,8 +97,13 @@ class CeleryConfig:
             "task": "reports.prune_log",
             "schedule": crontab(minute=10, hour=0),
         },
+        "reports.cleanup_old_reports": {
+            "task": "reports.cleanup_old_reports",
+            "schedule": timedelta(seconds=600), # 10 minutes
+        }
     }
 
+REPORT_MAX_LIFETIME_S=604800 # keep reports for 7 days
 
 CELERY_CONFIG = CeleryConfig
 

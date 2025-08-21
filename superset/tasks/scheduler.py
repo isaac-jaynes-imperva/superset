@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+import time
+import os
 from typing import Any
 
 from celery import Task
@@ -170,3 +172,28 @@ def prune_logs(
         LogPruneCommand(retention_period_days).run()
     except CommandException as ex:
         logger.exception("An error occurred while pruning logs: %s", ex)
+
+@celery_app.task(name="reports.cleanup_old_reports")
+def cleanup_old_reports() -> None:
+    """
+    Delete files in REPORT_OUTPUT_DIR older than REPORT_MAX_LIFETIME_S seconds.
+    """
+    report_dir = app.config.get("REPORT_OUTPUT_DIR", None)
+    max_lifetime = int(app.config.get("REPORT_MAX_LIFETIME_S", 604800))
+    now = time.time()
+    if not report_dir:
+        logger.info(f"Report directory is not set.")
+        return
+    if not os.path.isdir(report_dir):
+        logger.info(f"Report directory does not exist: {report_dir}")
+        return
+    for fname in os.listdir(report_dir):
+        fpath = os.path.join(report_dir, fname)
+        try:
+            if os.path.isfile(fpath):
+                mtime = os.path.getmtime(fpath)
+                if now - mtime > max_lifetime:
+                    os.remove(fpath)
+                    logger.info(f"Removed old report file: {fpath}")
+        except Exception as e:
+            logger.warning(f"Could not remove file {fpath}: {e}")
