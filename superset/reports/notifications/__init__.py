@@ -22,7 +22,9 @@ from superset.reports.notifications.slackv2 import SlackV2Notification  # noqa: 
 
 
 def create_notification(
-    recipient: ReportRecipients, notification_content: NotificationContent
+    recipient: ReportRecipients,
+    notification_content: NotificationContent,
+    update_last_report_filename: callable = None,
 ) -> BaseNotification:
     """
     Notification polymorphic factory
@@ -30,7 +32,7 @@ def create_notification(
     """
     for plugin in BaseNotification.plugins:
         if plugin.type == recipient.type:
-            return plugin(recipient, notification_content)
+            return plugin(recipient, notification_content, update_last_report_filename)
     raise Exception(  # pylint: disable=broad-exception-raised
         "Recipient type not supported"
     )

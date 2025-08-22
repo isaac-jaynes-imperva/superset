@@ -711,6 +711,7 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
         delete data.id;
         delete data.created_by;
         delete data.last_eval_dttm;
+        delete data.last_report_filename;
         delete data.last_state;
         delete data.last_value;
         delete data.last_value_row_json;

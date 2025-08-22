@@ -122,6 +122,7 @@ export type AlertObject = {
   grace_period?: number;
   id: number;
   last_eval_dttm?: number;
+  last_report_filename?: string;
   last_state?: 'Success' | 'Working' | 'Error' | 'Not triggered' | 'On Grace';
   log_retention?: number;
   name?: string;

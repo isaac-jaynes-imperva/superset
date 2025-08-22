@@ -354,6 +354,7 @@ def create_report_slack_chart_working():
     )
     report_schedule.last_state = ReportState.WORKING
     report_schedule.last_eval_dttm = datetime(2020, 1, 1, 0, 0)
+    report_schedule.last_report_filename = "report.csv"
     report_schedule.last_value = None
     report_schedule.last_value_row_json = None
     db.session.commit()
@@ -385,6 +386,7 @@ def create_alert_slack_chart_success():
     )
     report_schedule.last_state = ReportState.SUCCESS
     report_schedule.last_eval_dttm = datetime(2020, 1, 1, 0, 0)
+    report_schedule.last_report_filename = "report.csv"
 
     log = ReportExecutionLog(
         report_schedule=report_schedule,
@@ -427,6 +429,7 @@ def create_alert_slack_chart_grace(request):
         )
         report_schedule.last_state = ReportState.GRACE
         report_schedule.last_eval_dttm = datetime(2020, 1, 1, 0, 0)
+        report_schedule.last_report_filename = "report.csv"
 
         log = ReportExecutionLog(
             report_schedule=report_schedule,

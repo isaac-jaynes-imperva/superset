@@ -151,6 +151,7 @@ class ReportSchedule(AuditMixinNullable, ExtraJSONMixin, Model):
 
     # (Alerts) Stamped last observations
     last_eval_dttm = Column(DateTime)
+    last_report_filename = Column(String(512), nullable=True)
     last_state = Column(String(50), default=ReportState.NOOP)
     last_value = Column(Float)
     last_value_row_json = Column(MediumText())

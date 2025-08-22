@@ -56,6 +56,7 @@ const generateMockPayload = (dashboard = true) => {
     grace_period: 14400,
     id: 1,
     last_eval_dttm: null,
+    last_report_filename: null,
     last_state: 'Not triggered',
     last_value: null,
     last_value_row_json: null,
