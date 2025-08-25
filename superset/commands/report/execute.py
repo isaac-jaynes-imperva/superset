@@ -127,6 +127,13 @@ class BaseReportState:
         self._report_schedule.last_state = state
         self._report_schedule.last_eval_dttm = datetime.utcnow()
 
+    def update_last_report_filename(self, filename: str) -> None:
+        """
+        Update the last_report_filename for the report schedule.
+        """
+        logger.info(f"Updating last report filename for {self._report_schedule.id} to {filename}")
+        self._report_schedule.last_report_filename = filename
+
     def update_report_schedule_slack_v2(self) -> None:
         """
         Update the report schedule type and channels for all slack recipients to v2.
@@ -567,7 +574,7 @@ class BaseReportState:
         """
         notification_errors: list[SupersetError] = []
         for recipient in recipients:
-            notification = create_notification(recipient, notification_content)
+            notification = create_notification(recipient, notification_content, self.update_last_report_filename)
             try:
                 try:
                     if app.config["ALERT_REPORTS_NOTIFICATION_DRY_RUN"]:

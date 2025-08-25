@@ -51,6 +51,7 @@ const mockalerts = [...new Array(3)].map((_, i) => ({
   created_on: new Date().toISOString,
   id: i,
   last_eval_dttm: Date.now(),
+  last_report_filename: "test.csv",
   last_state: 'ok',
   name: `alert ${i}  `,
   owners: [{ id: 1 }],

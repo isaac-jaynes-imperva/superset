@@ -7703,6 +7703,10 @@
             "nullable": true,
             "type": "string"
           },
+          "last_report_filename": {
+            "nullable": true,
+            "type": "string"
+          },
           "last_state": {
             "maxLength": 50,
             "nullable": true,
@@ -7911,6 +7915,10 @@
           },
           "last_eval_dttm": {
             "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "last_report_filename": {
             "nullable": true,
             "type": "string"
           },

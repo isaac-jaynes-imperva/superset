@@ -106,6 +106,8 @@ const StyledHeaderWithIcon = styled.div`
 
 const HeaderExtension = extensionsRegistry.get('alertsreports.header.icon');
 
+const EMAIL_SHARED_FILE_BASE_URL = "http://localhost:8088"; // Must match superset_config.py
+
 function AlertList({
   addDangerToast,
   isReportEnabled = false,
@@ -359,17 +361,35 @@ function AlertList({
       },
       {
         Cell: ({ row: { original } }: any) => {
+          const hasDownloadLink = !!original.last_report_filename;
           const history = useHistory();
           const handleEdit = () => handleAlertEdit(original);
           const handleDelete = () => setCurrentAlertDeleting(original);
           const handleGotoExecutionLog = () =>
             history.push(`/${original.type.toLowerCase()}/${original.id}/log`);
 
+          const handleDownloadLast = () => {
+            if (!original.last_report_filename) {
+              addDangerToast(t('No output file available for download.'));
+              return;
+            }
+            const download_url = `${EMAIL_SHARED_FILE_BASE_URL}/downloads/${original.last_report_filename}`;
+            window.open(download_url, '_blank');
+          };
           const allowEdit =
             original.owners.map((o: Owner) => o.id).includes(user.userId) ||
             isUserAdmin(user);
 
           const actions = [
+            hasDownloadLink
+              ? {
+                  label: 'download-last-action',
+                  tooltip: t('Download last run'),
+                  placement: 'bottom',
+                  icon: 'DownloadOutlined',
+                  onClick: handleDownloadLast,
+                }
+              : null,
             canEdit
               ? {
                   label: 'execution-log-action',

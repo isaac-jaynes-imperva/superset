@@ -75,7 +75,7 @@ DATA_CACHE_CONFIG = CACHE_CONFIG
 THUMBNAIL_CACHE_CONFIG = CACHE_CONFIG
 
 REPORT_OUTPUT_DIR = "/app/downloads"
-EMAIL_SHARED_FILE_BASE_URL = "http://localhost:8088/"
+EMAIL_SHARED_FILE_BASE_URL = "http://localhost:8088/" # update at superset-frontend/src/pages/AlertReportList/index.tsx as well
 
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"

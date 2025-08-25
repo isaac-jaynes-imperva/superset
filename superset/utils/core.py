@@ -685,6 +685,7 @@ def create_download_link_for_file(
     fname: str,
     config: dict[str, Any],
     tmp_shared_folder: str,
+    update_last_report_filename: callable | None = None,
 ) -> str:
     """
     Copies the file to a shared folder with a unique hash and returns the HTML download link.
@@ -695,6 +696,9 @@ def create_download_link_for_file(
     unique_basename = f"{name_parts[0]}_{file_hash}{name_parts[1]}"
     shared_path = os.path.join(tmp_shared_folder, unique_basename)
     shutil.copy2(fname, shared_path)
+    # Save last_report_filename so it can be manually downloaded later
+    if update_last_report_filename is not None:
+        update_last_report_filename(unique_basename)
     download_url = f"{config.get('EMAIL_SHARED_FILE_BASE_URL', 'http://localhost:8088')}/downloads/{unique_basename}"
     return f'<a href="{download_url}">{basename}</a>'
 
@@ -713,6 +717,7 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
     mime_subtype: str = "mixed",
     header_data: HeaderDataType | None = None,
     attach: bool | None = None,
+    update_last_report_filename: callable | None = None,
 ) -> None:
     """
     Send an email with html content, eg:
@@ -759,7 +764,7 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
         if not attach:
             tmp_file_path = os.path.join(tmp_shared_folder, basename)
             shutil.copy2(fname, tmp_file_path)
-            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder))
+            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder, update_last_report_filename=update_last_report_filename))
         else:
             with open(fname, "rb") as f:
                 msg.attach(
@@ -780,7 +785,7 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
                     f.write(body.encode("utf-8"))
                 else:
                     f.write(body)
-            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder))
+            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder, update_last_report_filename=update_last_report_filename))
         else:
             msg.attach(
                 MIMEApplication(
@@ -794,7 +799,7 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
             tmp_file_path = os.path.join(tmp_shared_folder, name)
             with open(tmp_file_path, "wb") as f:
                 f.write(body_pdf)
-            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder))
+            download_links.append(create_download_link_for_file(tmp_file_path, config, tmp_shared_folder, update_last_report_filename=update_last_report_filename))
         else:
             msg.attach(
                 MIMEApplication(

@@ -83,6 +83,10 @@ class EmailNotification(BaseNotification):  # pylint: disable=too-few-public-met
     type = ReportRecipientType.EMAIL
     now = datetime.now(timezone("UTC"))
 
+    def __init__(self, recipient, content, update_last_report_filename=None):
+        super().__init__(recipient, content)
+        self.update_last_report_filename = update_last_report_filename
+
     @property
     def _name(self) -> str:
         """Include date format in the name if feature flag is enabled"""
@@ -250,7 +254,7 @@ class EmailNotification(BaseNotification):  # pylint: disable=too-few-public-met
                 cc=cc,
                 bcc=bcc,
                 header_data=content.header_data,
-                attach=True,
+                update_last_report_filename=self.update_last_report_filename,
             )
             logger.info(
                 "Report sent to email, notification content is %s", content.header_data
